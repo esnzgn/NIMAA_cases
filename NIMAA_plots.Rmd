@@ -54,7 +54,7 @@ nim_facilitator <- function(inputii, nom_col, num_col){
   verbose = FALSE # NOT save the figures to local folder
   )
   
-  # return(inc)
+  return(inc)
 }
 
 nim_heatmap <- function(inc_input){
@@ -70,22 +70,123 @@ nim_heatmap <- function(inc_input){
 }
 
 # nim_heatmap(beatAML_inc)
-#          
-# Visualize
-nim_facilitator(beatAML, c(1,2), 3)
-plotBipartite(inc_mat = beatAML_incidence_matrix, vertex.label.display = T)
-nim_facilitator(drugComb, c(1,2), 3)
-nim_facilitator(beatAML, c(1,2), 3)
-nim_facilitator(beatAML, c(1,2), 3)
-nim_facilitator(beatAML, c(1,2), 3)
-nim_facilitator(beatAML, c(1,2), 3)
-nim_facilitator(beatAML, c(1,2), 3)
-
-
-
+#   
+nim_inc <- function(dataset, nm){
+  # nm = "./output/inc_matrix_beatAML.png"
+  png(nm, width = 5200, height = 1200, units = "px")
+  inc_beat <- nim_facilitator(dataset, c(1,2), 3)
+  dev.off()
+}
 
 ```
 
+```{r }
+# Visualize beatAML
+# inc
+png("./output/inc_matrix_beatAML.png", width = 5200, height = 1200, units = "px")
+  inc_beat <- nim_facilitator(beatAML, c(1,2), 3)
+dev.off()
+
+# bnet
+png("./output/bnet_beatAML.png", width = 2200, height = 1200, units = "px")
+  plotBipartite(inc_mat = inc_beat, vertex.label.display = T)
+dev.off()
+
+# sub mat
+# png("./output/bnet_beatAML.png", width = 2200, height = 1200, units = "px")
+sub_matrices <- extractSubMatrix(
+  x = inc_beat,
+  shape = c("Rectangular_element_max"), # the selected shapes of submatrices
+  row.vars = "patient_id",
+  col.vars = "inhibitor",
+  plot_weight = TRUE,
+  print_skim = FALSE
+  )
+# dev.off()
+
+```
+
+```{r }
+# Visualize DrugComb
+# inc
+nm = file.path("./output", "inc_matrix_drugComb.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  inc_drugcomb <- nim_facilitator(drugComb, c(1,2), 3)
+dev.off()
+
+# bnet
+nm = file.path("./output", "bnet_drugComb.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  plotBipartite(inc_mat = inc_drugcomb, vertex.label.display = T)
+dev.off()
+
+# sub mat
+# png("./output/bnet_beatAML.png", width = 2200, height = 1200, units = "px")
+sub_matrices <- extractSubMatrix(
+  x = inc_drugcomb,
+  shape = c("Rectangular_element_max"), # the selected shapes of submatrices
+  row.vars = "cell lines",
+  col.vars = "inhibitor",
+  plot_weight = TRUE,
+  print_skim = FALSE
+  )
+# dev.off()
+
+```
+```{r }
+# Visualize HR analysis
+# inc
+nm = file.path("./output", "inc_matrix_HR.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  inc_HR <- nim_facilitator(hr_anal_data, c(1,2), 3)
+dev.off()
+
+# bnet
+nm = file.path("./output", "bnet_HR.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  plotBipartite(inc_mat = inc_HR, vertex.label.display = T)
+dev.off()
+
+# sub mat
+# png("./output/bnet_beatAML.png", width = 2200, height = 1200, units = "px")
+sub_matrices <- extractSubMatrix(
+  x = inc_HR,
+  shape = c("Rectangular_element_max"), # the selected shapes of submatrices
+  row.vars = "cell lines",
+  col.vars = "inhibitor",
+  plot_weight = TRUE,
+  print_skim = FALSE
+  )
+# dev.off()
+
+```
+```{r }
+# Visualize Fish 
+# inc
+nm = file.path("./output", "inc_matrix_fish.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  inc_fish <- nim_facilitator(fish_catch_data, c(1,2), 3)
+dev.off()
+
+# bnet
+nm = file.path("./output", "bnet_fish.png")
+png(nm, width = 2200, height = 1200, units = "px")
+  plotBipartite(inc_mat = inc_fish, vertex.label.display = T)
+dev.off()
+
+# sub mat
+# png("./output/bnet_beatAML.png", width = 2200, height = 1200, units = "px")
+sub_matrices <- extractSubMatrix(
+  x = inc_fish,
+  shape = c("Rectangular_element_max"), # the selected shapes of submatrices
+  row.vars = "Species",
+  col.vars = "Area",
+  plot_weight = TRUE,
+  print_skim = FALSE
+  )
+# dev.off()
+
+```
 # 🔍 Extract Submatrix
 
 ```{r extract-submatrix}
