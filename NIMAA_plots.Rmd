@@ -1,0 +1,153 @@
+---
+title: "NIMAA Vignette Analysis"
+author: "Ehsan Zangene"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(NIMAA)
+library(igraph)
+library(ggplot2)
+library(pheatmap)
+library(dplyr)
+library(tidyverse)
+```
+
+# 📥 Load Nominal Data
+
+```{r load-data fish catch}
+address <- "../NIMAA_cases_ext/"
+
+list.files(address)
+
+beatAML_data <- NIMAA::beatAML
+fish_catch_data = readRDS( paste0( address, "fish_catches.rds"))
+hr_anal_data = readRDS( paste0( address, "HR_Analytics.rds"))
+load( paste0( address, "drugComb.rda"))
+load( paste0( address, "herbIngredient.rda"))
+load(paste0(address, "robertson.rda"))
+student_discuss_data = readRDS( paste0( address, "student_discussion.rds"))
+online_retail_data = readRDS( paste0( address, "online_retail.rds"))
+rm(address)
+```
+
+# 🔲 Plot Incidence Matrix
+
+```{r incidence-matrix}
+
+nim_facilitator <- function(inputii, nom_col, num_col){
+   # inputii = beatAML; nom_col = c(2,1); num_col = 3; 
+  # inputii <- get(i)
+  
+  inc <- plotIncMatrix(
+  x = inputii, # original data with 3 columns
+  index_nominal = nom_col, # the first two columns are nominal data
+  index_numeric = num_col,  # the third column is numeric data
+  print_skim = FALSE, # if you want to check the skim output, set this as TRUE
+  plot_weight = TRUE, # when plotting the weighted incidence matrix
+  verbose = FALSE # NOT save the figures to local folder
+  )
+  
+  # return(inc)
+}
+
+nim_heatmap <- function(inc_input){
+  # inc_input=beatAML_inc
+  beatAML_inc_clean <- as.matrix(inc_input)
+  # beatAML_inc_clean[is.na(beatAML_inc_clean)] <- 0
+  
+  # Optional: Scale the data (for visual contrast)
+  beatAML_inc_scaled <- scale(beatAML_inc_clean)
+  pheatmap(beatAML_inc_scaled, main = "Heatmap of beatAML Incidence Matrix (NA→0, Scaled)",
+           cluster_rows = F, 
+         cluster_cols = F, legend = F)
+}
+
+# nim_heatmap(beatAML_inc)
+#          
+# Visualize
+nim_facilitator(beatAML, c(1,2), 3)
+plotBipartite(inc_mat = beatAML_incidence_matrix, vertex.label.display = T)
+nim_facilitator(drugComb, c(1,2), 3)
+nim_facilitator(beatAML, c(1,2), 3)
+nim_facilitator(beatAML, c(1,2), 3)
+nim_facilitator(beatAML, c(1,2), 3)
+nim_facilitator(beatAML, c(1,2), 3)
+nim_facilitator(beatAML, c(1,2), 3)
+
+
+
+
+```
+
+# 🔍 Extract Submatrix
+
+```{r extract-submatrix}
+subm <- extractSubMatrix(
+  incidence_matrix = inc$matrix,
+  method = "binmatnest"
+)
+pheatmap(subm$matrix, main = "Extracted Submatrix")
+```
+
+# 🧠 Clustering
+
+```{r clustering}
+cl <- findCluster(
+  incidence_matrix = subm$matrix,
+  method = "louvain"
+)
+plotBipartiteGraph(
+  incidence_matrix = subm$matrix,
+  clusters = cl,
+  layout = "bipartite"
+)
+```
+
+# 🔗 Bipartite Projections
+
+```{r projections, fig.width=10}
+proj <- projectMatrix(
+  incidence_matrix = subm$matrix,
+  part = "both"
+)
+par(mfrow = c(1, 2))
+plot(proj$Label1, main = "Projection: Label1", vertex.label.cex = 0.7)
+plot(proj$Label2, main = "Projection: Label2", vertex.label.cex = 0.7)
+par(mfrow = c(1, 1))
+```
+
+# 🧩 Imputation of Missing Values
+
+```{r imputation}
+subm_missing <- subm$matrix
+set.seed(123)
+subm_missing[sample(length(subm_missing), size = floor(0.1 * length(subm_missing)))] <- NA
+
+imputations <- imputeMissingValue(
+  incidence_matrix = subm_missing,
+  methods = c("mean", "median", "svd", "als", "lls")
+)
+```
+
+# 📈 Evaluate Imputations
+
+```{r evaluate}
+evals <- evaluateImputation(
+  imputations = imputations,
+  original_matrix = subm$matrix,
+  metrics = c("rmse", "cor")
+)
+evals
+```
+
+# 🔥 Visualize One Imputation (SVD)
+
+```{r heatmap-svd}
+pheatmap(imputations$svd, main = "SVD Imputed Matrix")
