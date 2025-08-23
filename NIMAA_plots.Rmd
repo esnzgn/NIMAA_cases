@@ -83,8 +83,10 @@ nim_inc <- function(dataset, nm){
 ```{r }
 # Visualize beatAML
 # inc
-png("./output/inc_matrix_beatAML.png", width = 5200, height = 1200, units = "px")
-  inc_beat <- nim_facilitator(beatAML, c(1,2), 3)
+# png("./output/inc_matrix_beatAML.png", width = 5200, height = 1200, units = "px")
+
+inc_beat <- nim_facilitator(fish_catch_data, c(1,2), 3)
+  print(inc_beat)
 dev.off()
 
 # bnet
